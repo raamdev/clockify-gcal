@@ -57,7 +57,7 @@ app.get('/manifest', (req, res) => {
     ],
 
     // Required Clockify scopes
-    scopes: ['TIME_ENTRIES:READ', 'WORKSPACE:READ', 'USER:READ'],
+    scopes: ['TIME_ENTRY_READ', 'WORKSPACE_READ', 'USER_READ'],
   });
 });
 
