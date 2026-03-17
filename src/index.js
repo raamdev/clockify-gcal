@@ -30,34 +30,27 @@ app.use((req, res, next) => {
 
 app.get('/manifest', (req, res) => {
   res.json({
-    id: 'clockify-gcal-sync',
+    key: 'clockify-gcal-sync',
     name: 'Google Calendar Sync',
-    description: 'Automatically syncs Clockify time entries to Google Calendar every 15 minutes — creates, updates, and deletes events to keep both tools in perfect alignment.',
+    description: 'Automatically syncs Clockify time entries to Google Calendar every 15 minutes.',
     version: '1.0.0',
     baseUrl: BASE_URL,
 
-    // Where the settings iframe is rendered inside Clockify
-    settings: {
-      url: `${BASE_URL}/settings`,
-    },
+    scopes: ['TIME_ENTRY_READ', 'PROJECT_READ', 'USER_READ'],
 
-    // Add-on lifecycle hooks
-    lifecycle: {
-      installed:   `${BASE_URL}/lifecycle/installed`,
-      uninstalled: `${BASE_URL}/lifecycle/uninstalled`,
-    },
+    lifecycles: [
+      { type: 'INSTALLED', path: '/lifecycle/installed' },
+      { type: 'DELETED',   path: '/lifecycle/uninstalled' },
+    ],
 
-    // UI component: a tab in workspace settings / integrations
     components: [
       {
         type: 'SIDEBAR',
-        url:  `${BASE_URL}/settings`,
         label: 'GCal Sync',
+        accessLevel: 'ADMINS',
+        path: '/settings',
       },
     ],
-
-    // Required Clockify scopes
-    scopes: ['TIME_ENTRY_READ', 'WORKSPACE_READ', 'USER_READ'],
   });
 });
 
