@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Google Calendar Sync — Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:         #0d1117;
+      --bg2:        #161b22;
+      --bg3:        #1c2333;
+      --border:     #30363d;
+      --text:       #e6edf3;
+      --muted:      #8b949e;
+      --accent:     #03a9f4;
+      --accent-dim: #0288d1;
+      --success:    #3fb950;
+      --warning:    #d29922;
+      --danger:     #f85149;
+      --radius:     8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 24px 20px 48px;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .header-text h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .header-text p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    /* ── Status badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+    .badge-connected   { background: rgba(63,185,80,.15); color: var(--success); }
+    .badge-disconnected { background: rgba(248,81,73,.15); color: var(--danger); }
+    .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn:disabled { opacity: .4; cursor: default; }
+    .btn-primary  { background: var(--accent); color: #000; }
+    .btn-primary:hover:not(:disabled) { background: #29b6f6; }
+    .btn-outline  { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover:not(:disabled) { background: var(--bg3); }
+    .btn-danger   { background: rgba(248,81,73,.15); color: var(--danger); border: 1px solid rgba(248,81,73,.3); }
+    .btn-danger:hover:not(:disabled) { background: rgba(248,81,73,.25); }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+    /* ── Google connect section ── */
+    .google-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .google-info { display: flex; align-items: center; gap: 10px; }
+    .google-icon {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+    .google-label { font-size: 13px; font-weight: 500; }
+    .google-sub   { font-size: 12px; color: var(--muted); }
+
+    /* ── Select ── */
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    select, input {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      outline: none;
+      transition: border-color .15s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b949e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+      cursor: pointer;
+    }
+    select:focus, input:focus { border-color: var(--accent); }
+
+    /* ── Sync log ── */
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .log-table th {
+      text-align: left;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .log-table td {
+      padding: 7px 8px;
+      border-bottom: 1px solid rgba(48,54,61,.5);
+      font-family: 'DM Mono', monospace;
+    }
+    .log-table tr:last-child td { border-bottom: none; }
+    .stat-created { color: var(--success); }
+    .stat-updated { color: var(--accent); }
+    .stat-deleted { color: var(--danger); }
+    .log-error    { color: var(--danger); font-size: 11px; }
+
+    /* ── Footer actions ── */
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 18px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      opacity: 0;
+      transition: opacity .2s, transform .2s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Loading skeleton ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg3) 25%, var(--bg2) 50%, var(--bg3) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+      height: 14px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% } 100% { background-position: -200% } }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">📅</div>
+      <div class="header-text">
+        <h1>Google Calendar Sync</h1>
+        <p>Syncs your Clockify time entries to Google Calendar every 15 minutes</p>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loading">
+      <div class="card">
+        <div class="skeleton" style="width:60%;margin-bottom:10px"></div>
+        <div class="skeleton" style="width:40%"></div>
+      </div>
+    </div>
+
+    <!-- Main content (hidden until loaded) -->
+    <div id="main" class="hidden">
+
+      <!-- Connection Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Google Calendar</span>
+          <span id="connection-badge" class="badge badge-disconnected">Not connected</span>
+        </div>
+        <div class="google-row">
+          <div class="google-info">
+            <!-- Google "G" logo as inline SVG -->
+            <svg class="google-icon" viewBox="0 0 48 48">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            <div>
+              <div class="google-label">Google Account</div>
+              <div class="google-sub" id="google-sub">Not connected</div>
+            </div>
+          </div>
+          <div>
+            <button class="btn btn-primary" id="btn-connect" onclick="connectGoogle()">Connect</button>
+            <button class="btn btn-danger btn-sm hidden" id="btn-disconnect" onclick="disconnectGoogle()">Disconnect</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Selection (shown when connected) -->
+      <div class="card hidden" id="calendar-card">
+        <div class="card-header">
+          <span class="card-title">Sync Settings</span>
+        </div>
+        <div class="field">
+          <label>Target Calendar</label>
+          <select id="calendar-select" onchange="saveSettings()">
+            <option value="primary">Loading calendars…</option>
+          </select>
+          <div style="font-size:11px;color:var(--muted);margin-top:5px">
+            Clockify time entries will be created in this calendar.
+          </div>
+        </div>
+      </div>
+
+      <!-- Sync Log -->
+      <div class="card" id="log-card">
+        <div class="card-header">
+          <span class="card-title">Recent Sync Activity</span>
+          <button class="btn btn-outline btn-sm" onclick="syncNow()" id="btn-sync-now">
+            ↻ Sync Now
+          </button>
+        </div>
+        <div id="log-content">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">
+            No sync activity yet
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+
+    <div id="toast"></div>
+
+  </div>
+
+  <script>
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    const BASE_URL = window.location.origin;
+
+    // Extract the addon JWT from the URL ?token= parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token') || '';
+
+    // Parse workspaceId from JWT payload (no signature check needed here)
+    function parseJwt(t) {
+      try {
+        return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      } catch { return {}; }
+    }
+    const payload = parseJwt(token);
+    const workspaceId = payload.workspaceId || payload.sub || '';
+
+    function toast(msg, duration = 2500) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), duration);
+    }
+
+    function show(id)  { document.getElementById(id)?.classList.remove('hidden'); }
+    function hide(id)  { document.getElementById(id)?.classList.add('hidden');    }
+    function text(id, t) { const el = document.getElementById(id); if (el) el.textContent = t; }
+
+    // ── Init ─────────────────────────────────────────────────────────────────
+
+    async function init() {
+      if (!token) {
+        document.body.innerHTML = '<div style="padding:24px;color:#f85149">Missing auth token. Please reopen this settings page from Clockify.</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch(`${BASE_URL}/settings/api/status?token=${encodeURIComponent(token)}`);
+        const data = await res.json();
+
+        hide('loading');
+        show('main');
+
+        if (data.connected) {
+          setConnectedUI(data);
+          await loadCalendars(data.calendarId);
+        }
+
+        renderLogs(data.recentLogs || []);
+
+      } catch (err) {
+        hide('loading');
+        document.getElementById('main').innerHTML =
+          `<div class="card" style="color:var(--danger)">Error loading settings: ${err.message}</div>`;
+      }
+    }
+
+    function setConnectedUI(data) {
+      // Badge
+      const badge = document.getElementById('connection-badge');
+      badge.textContent = 'Connected';
+      badge.className = 'badge badge-connected';
+
+      // Sub-text
+      text('google-sub', 'Google Calendar access granted');
+
+      // Buttons
+      hide('btn-connect');
+      show('btn-disconnect');
+
+      // Calendar card
+      show('calendar-card');
+    }
+
+    // ── Google Auth ───────────────────────────────────────────────────────────
+
+    function connectGoogle() {
+      const popup = window.open(
+        `${BASE_URL}/auth/google?workspaceId=${encodeURIComponent(workspaceId)}`,
+        'google-auth',
+        'width=500,height=620,scrollbars=yes'
+      );
+
+      window.addEventListener('message', async function handler(e) {
+        if (e.data?.type === 'gcal-connected') {
+          window.removeEventListener('message', handler);
+          toast('✅ Google Calendar connected!');
+          await init();
+        }
+      });
+    }
+
+    async function disconnectGoogle() {
+      if (!confirm('Disconnect Google Calendar? Future syncs will stop, but existing calendar events will remain.')) return;
+      await fetch(`${BASE_URL}/auth/google/disconnect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId }),
+      });
+      toast('Disconnected from Google Calendar');
+      await init();
+    }
+
+    // ── Calendars ─────────────────────────────────────────────────────────────
+
+    async function loadCalendars(selectedId) {
+      try {
+        const res = await fetch(`${BASE_URL}/settings/api/calendars?token=${encodeURIComponent(token)}`);
+        const cals = await res.json();
+        if (!Array.isArray(cals)) return;
+
+        const sel = document.getElementById('calendar-select');
+        sel.innerHTML = cals.map(c =>
+          `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>
+            ${c.name}${c.primary ? ' (primary)' : ''}
+          </option>`
+        ).join('');
+      } catch (err) {
+        console.error('Failed to load calendars:', err);
+      }
+    }
+
+    async function saveSettings() {
+      const calendarId = document.getElementById('calendar-select').value;
+      await fetch(`${BASE_URL}/settings/api/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, calendarId }),
+      });
+      toast('Settings saved');
+    }
+
+    // ── Sync Now ──────────────────────────────────────────────────────────────
+
+    async function syncNow() {
+      const btn = document.getElementById('btn-sync-now');
+      btn.disabled = true;
+      btn.textContent = 'Syncing…';
+
+      try {
+        const res = await fetch(`${BASE_URL}/settings/api/sync-now`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          toast(`❌ ${data.error}`);
+        } else {
+          toast(`✅ Sync complete: +${data.created} ~${data.updated} -${data.deleted}`);
+          await init(); // refresh logs
+        }
+      } catch (err) {
+        toast(`❌ ${err.message}`);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '↻ Sync Now';
+      }
+    }
+
+    // ── Render log ────────────────────────────────────────────────────────────
+
+    function renderLogs(logs) {
+      const el = document.getElementById('log-content');
+      if (!logs.length) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">No sync activity yet</div>';
+        return;
+      }
+
+      const rows = logs.map(l => {
+        const t = new Date(l.runAt).toLocaleString(undefined, {
+          month: 'short', day: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+        if (l.error) {
+          return `<tr>
+            <td>${t}</td>
+            <td colspan="3" class="log-error">⚠ ${l.error}</td>
+          </tr>`;
+        }
+        return `<tr>
+          <td>${t}</td>
+          <td class="stat-created">+${l.created}</td>
+          <td class="stat-updated">~${l.updated}</td>
+          <td class="stat-deleted">-${l.deleted}</td>
+        </tr>`;
+      }).join('');
+
+      el.innerHTML = `
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Created</th>
+              <th>Updated</th>
+              <th>Deleted</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    // Start
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Google Calendar Sync</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0e1117;
+      --surface:    #161b24;
+      --border:     #252c3a;
+      --border-hov: #3a4455;
+      --teal:       #03b89e;
+      --teal-dim:   rgba(3,184,158,.12);
+      --teal-glow:  rgba(3,184,158,.28);
+      --red:        #e05252;
+      --red-dim:    rgba(224,82,82,.12);
+      --amber:      #f0a444;
+      --text:       #e2e8f0;
+      --text-soft:  #8897aa;
+      --text-faint: #4a5568;
+      --radius:     10px;
+      --font:       'DM Sans', system-ui, sans-serif;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      line-height: 1.5;
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    /* ─── Layout ─────────────────────────────────────────────────────────── */
+    .wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 16px;
+      max-width: 480px;
+    }
+
+    /* ─── Header ─────────────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-icon {
+      width: 32px; height: 32px;
+      background: var(--teal-dim);
+      border: 1.5px solid var(--teal);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .header-icon svg { width: 16px; height: 16px; fill: var(--teal); }
+    .header-title { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+    .header-sub   { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
+
+    /* ─── Cards ──────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      transition: border-color .15s;
+    }
+    .card-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 10px;
+    }
+
+    /* ─── Status pill ────────────────────────────────────────────────────── */
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .status-info { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      box-shadow: 0 0 0 2px var(--bg);
+    }
+    .dot.green  { background: var(--teal);  box-shadow: 0 0 6px var(--teal-glow), 0 0 0 2px var(--bg); }
+    .dot.orange { background: var(--amber); }
+    .dot.red    { background: var(--red);   }
+    .status-label { font-size: 13px; font-weight: 500; }
+    .status-sub   { font-size: 11px; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ─── Buttons ────────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: background .15s, opacity .15s, transform .08s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn svg { width: 13px; height: 13px; }
+
+    .btn-primary {
+      background: var(--teal);
+      color: #000;
+    }
+    .btn-primary:hover:not(:disabled) { background: #04d0b2; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-soft);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover:not(:disabled) { border-color: var(--border-hov); color: var(--text); }
+
+    .btn-danger {
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid transparent;
+    }
+    .btn-danger:hover:not(:disabled) { background: rgba(224,82,82,.2); }
+
+    .btn-icon {
+      padding: 6px;
+      background: var(--teal-dim);
+      color: var(--teal);
+      border: 1px solid var(--border);
+    }
+    .btn-icon:hover:not(:disabled) { background: rgba(3,184,158,.2); }
+
+    /* ─── Stats row ──────────────────────────────────────────────────────── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .stat {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 10px 8px;
+      text-align: center;
+    }
+    .stat-val  { font-size: 20px; font-weight: 600; color: var(--teal); line-height: 1; }
+    .stat-key  { font-size: 10px; color: var(--text-faint); margin-top: 3px; text-transform: uppercase; letter-spacing: .05em; }
+
+    /* ─── Form controls ──────────────────────────────────────────────────── */
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field-label { font-size: 11px; color: var(--text-soft); font-weight: 500; }
+    .field-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    input[type=number], input[type=text], select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      padding: 6px 10px;
+      width: 100%;
+      outline: none;
+      transition: border-color .15s;
+    }
+    input[type=number]:focus, input[type=text]:focus, select:focus {
+      border-color: var(--teal);
+    }
+    input[type=number] { -moz-appearance: textfield; }
+    input[type=number]::-webkit-inner-spin-button { display: none; }
+    select option { background: var(--surface); }
+
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 2px 0;
+    }
+    .toggle-label { font-size: 13px; }
+
+    /* toggle switch */
+    .toggle {
+      position: relative; width: 34px; height: 18px; cursor: pointer;
+    }
+    .toggle input { display: none; }
+    .toggle-track {
+      position: absolute; inset: 0;
+      background: var(--border-hov);
+      border-radius: 9px;
+      transition: background .2s;
+    }
+    .toggle input:checked + .toggle-track { background: var(--teal); }
+    .toggle-thumb {
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      transition: left .2s;
+    }
+    .toggle input:checked ~ .toggle-thumb { left: 18px; }
+
+    /* ─── Action bar ─────────────────────────────────────────────────────── */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 4px;
+    }
+    .action-bar-left { display: flex; gap: 8px; }
+
+    /* ─── Toast ──────────────────────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 16px; left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 12px;
+      white-space: nowrap;
+      box-shadow: 0 4px 24px rgba(0,0,0,.5);
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1), opacity .25s;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 999;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    #toast.ok   { border-color: var(--teal); color: var(--teal); }
+    #toast.err  { border-color: var(--red);  color: var(--red);  }
+
+    /* ─── Skeleton / loading ─────────────────────────────────────────────── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, var(--border) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 4px;
+      height: 12px;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    /* ─── Spinner ────────────────────────────────────────────────────────── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { animation: spin .7s linear infinite; }
+
+    /* ─── Sections ───────────────────────────────────────────────────────── */
+    #section-loading, #section-error, #section-main { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- ─── Loading state ─────────────────────────────────────────────────────── -->
+<div class="wrap" id="section-loading">
+  <div class="card" style="gap:10px;display:flex;flex-direction:column;">
+    <div class="skeleton" style="width:60%;height:14px;"></div>
+    <div class="skeleton" style="width:40%;height:10px;"></div>
+    <div class="skeleton" style="height:60px;margin-top:6px;"></div>
+  </div>
+</div>
+
+<!-- ─── Error state ───────────────────────────────────────────────────────── -->
+<div class="wrap" id="section-error">
+  <div class="card">
+    <p style="color:var(--red);font-size:12px;">⚠ Could not load add-on. Make sure you have Clockify installed and try refreshing.</p>
+  </div>
+</div>
+
+<!-- ─── Main UI ───────────────────────────────────────────────────────────── -->
+<div class="wrap" id="section-main">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-icon">
+      <!-- Google Calendar icon (simplified) -->
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+      </svg>
+    </div>
+    <div>
+      <div class="header-title">Google Calendar Sync</div>
+      <div class="header-sub">Clockify → GCal · <span id="lbl-workspace">loading…</span></div>
+    </div>
+  </div>
+
+  <!-- Connection card -->
+  <div class="card">
+    <div class="card-label">Google Account</div>
+    <div class="status-row">
+      <div class="status-info">
+        <div class="dot" id="dot-status"></div>
+        <div>
+          <div class="status-label" id="lbl-status">Not connected</div>
+          <div class="status-sub" id="lbl-status-sub"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-primary" id="btn-connect" onclick="connectGoogle()">Connect</button>
+        <button class="btn btn-danger"  id="btn-disconnect" onclick="disconnectGoogle()" style="display:none;">Disconnect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats card — only shown when connected -->
+  <div class="card" id="card-stats" style="display:none;">
+    <div class="card-label">Sync Status</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val" id="stat-entries">—</div><div class="stat-key">Synced</div></div>
+      <div class="stat"><div class="stat-val" id="stat-back">—</div><div class="stat-key">Days back</div></div>
+      <div class="stat"><div class="stat-val" id="stat-fwd">—</div><div class="stat-key">Days fwd</div></div>
+    </div>
+    <div style="margin-top:10px;color:var(--text-faint);font-size:11px;">
+      Last sync: <span id="lbl-last-sync">never</span>
+    </div>
+  </div>
+
+  <!-- Config card — only shown when connected -->
+  <div class="card" id="card-config" style="display:none;">
+    <div class="card-label">Sync Range</div>
+    <div class="field-row" style="margin-bottom:10px;">
+      <div class="field">
+        <label class="field-label">Days back</label>
+        <input type="number" id="inp-days-back" min="1" max="365" value="30" />
+      </div>
+      <div class="field">
+        <label class="field-label">Days forward</label>
+        <input type="number" id="inp-days-fwd" min="0" max="90" value="0" />
+      </div>
+    </div>
+
+    <div class="card-label" style="margin-bottom:8px;">Options</div>
+    <div class="toggle-row">
+      <span class="toggle-label">Sync enabled</span>
+      <label class="toggle">
+        <input type="checkbox" id="chk-enabled" checked />
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="action-bar" id="action-bar" style="display:none;">
+    <div class="action-bar-left">
+      <button class="btn btn-primary" id="btn-save" onclick="saveConfig()">Save changes</button>
+      <button class="btn btn-ghost" id="btn-sync-now" onclick="syncNow()">
+        <svg id="sync-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Sync now
+      </button>
+    </div>
+    <span id="lbl-save-status" style="font-size:11px;color:var(--text-faint);"></span>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  // ─── Bootstrap ──────────────────────────────────────────────────────────────
+  const params    = new URLSearchParams(window.location.search);
+  const authToken = params.get('auth_token') || '';
+  const BASE      = window.location.origin;
+
+  let state = {};
+
+  // Show loading skeleton immediately
+  show('section-loading');
+
+  // Listen for Google OAuth popup result
+  window.addEventListener('message', (e) => {
+    if (e.data?.type === 'GOOGLE_AUTH_SUCCESS') {
+      toast('Google Calendar connected!', 'ok');
+      loadStatus();
+    } else if (e.data?.type === 'GOOGLE_AUTH_ERROR') {
+      toast('Connection failed: ' + (e.data.error || 'unknown error'), 'err');
+    }
+  });
+
+  // ─── API helpers ────────────────────────────────────────────────────────────
+  async function api(method, path, body) {
+    const url = `${BASE}/api${path}?auth_token=${encodeURIComponent(authToken)}`;
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(url, opts);
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ error: r.statusText }));
+      throw new Error(err.error || r.statusText);
+    }
+    return r.json();
+  }
+
+  // ─── Load / render ──────────────────────────────────────────────────────────
+  async function loadStatus() {
+    try {
+      state = await api('GET', '/status');
+      render();
+    } catch (err) {
+      console.error(err);
+      show('section-error');
+    }
+  }
+
+  function render() {
+    show('section-main');
+
+    // Workspace badge
+    const wid = state.workspaceId ?? '';
+    $('lbl-workspace').textContent = wid ? wid.slice(-6) : '—';
+
+    if (state.googleConnected) {
+      // Connection status
+      $('dot-status').className = 'dot green';
+      $('lbl-status').textContent = 'Connected';
+      const since = state.connectedAt
+        ? 'since ' + new Date(state.connectedAt).toLocaleDateString()
+        : '';
+      $('lbl-status-sub').textContent = `Calendar: ${state.calendarId ?? 'primary'}  ${since}`;
+      $('btn-connect').style.display    = 'none';
+      $('btn-disconnect').style.display = '';
+
+      // Stats
+      $('stat-entries').textContent = state.syncedEntries ?? 0;
+      $('stat-back').textContent    = state.config?.daysBack    ?? 30;
+      $('stat-fwd').textContent     = state.config?.daysForward ?? 0;
+      $('lbl-last-sync').textContent = state.lastSyncAt
+        ? formatRelative(state.lastSyncAt)
+        : 'never';
+
+      // Config inputs
+      $('inp-days-back').value  = state.config?.daysBack    ?? 30;
+      $('inp-days-fwd').value   = state.config?.daysForward ?? 0;
+      $('chk-enabled').checked  = !!state.config?.enabled;
+
+      // Show connected-only sections
+      toggle('card-stats',  true);
+      toggle('card-config', true);
+      toggle('action-bar',  true);
+    } else {
+      $('dot-status').className = 'dot orange';
+      $('lbl-status').textContent = 'Not connected';
+      $('lbl-status-sub').textContent = 'Connect your Google account to start syncing';
+      $('btn-connect').style.display    = '';
+      $('btn-disconnect').style.display = 'none';
+      toggle('card-stats',  false);
+      toggle('card-config', false);
+      toggle('action-bar',  false);
+    }
+  }
+
+  // ─── Actions ────────────────────────────────────────────────────────────────
+  function connectGoogle() {
+    const url = `${BASE}/auth/google/start?workspace_id=${encodeURIComponent(state.workspaceId)}&user_id=${encodeURIComponent(state.userId)}`;
+    const popup = window.open(url, 'google-auth', 'width=540,height=620,scrollbars=yes');
+    if (!popup) {
+      toast('Please allow popups for this site, then try again.', 'err');
+    }
+  }
+
+  async function disconnectGoogle() {
+    if (!confirm('Disconnect Google Calendar? Existing events will remain in your calendar.')) return;
+    try {
+      await fetch(`${BASE}/auth/google/disconnect`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspace_id: state.workspaceId, user_id: state.userId })
+      });
+      toast('Disconnected.', 'ok');
+      loadStatus();
+    } catch (err) {
+      toast('Disconnect failed: ' + err.message, 'err');
+    }
+  }
+
+  async function saveConfig() {
+    const btn = $('btn-save');
+    btn.disabled = true;
+    try {
+      await api('PATCH', '/config', {
+        daysBack:    parseInt($('inp-days-back').value, 10),
+        daysForward: parseInt($('inp-days-fwd').value, 10),
+        enabled:     $('chk-enabled').checked ? 1 : 0
+      });
+      toast('Settings saved', 'ok');
+      loadStatus();
+    } catch (err) {
+      toast('Save failed: ' + err.message, 'err');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function syncNow() {
+    const btn  = $('btn-sync-now');
+    const icon = $('sync-icon');
+    btn.disabled = true;
+    icon.classList.add('spin');
+    try {
+      const { stats } = await api('POST', '/sync');
+      toast(`Sync done · +${stats.created} new  ~${stats.updated} updated  -${stats.deleted} removed`, 'ok');
+      loadStatus();
+    } catch (err) {
+      toast('Sync error: ' + err.message, 'err');
+    } finally {
+      btn.disabled = false;
+      icon.classList.remove('spin');
+    }
+  }
+
+  // ─── Utilities ───────────────────────────────────────────────────────────────
+  function $(id) { return document.getElementById(id); }
+
+  function show(sectionId) {
+    ['section-loading','section-error','section-main'].forEach(id => {
+      document.getElementById(id).style.display = id === sectionId ? 'flex' : 'none';
+    });
+    if (sectionId === 'section-main') {
+      document.getElementById(sectionId).style.flexDirection = 'column';
+    }
+  }
+
+  function toggle(id, visible) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = visible ? '' : 'none';
+  }
+
+  let toastTimer;
+  function toast(msg, type = 'ok') {
+    const el = $('toast');
+    el.textContent = msg;
+    el.className = `show ${type}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = type; }, 3400);
+  }
+
+  function formatRelative(iso) {
+    const d = new Date(iso);
+    const diff = (Date.now() - d.getTime()) / 1000;
+    if (diff < 60)   return 'just now';
+    if (diff < 3600) return `${Math.round(diff/60)}m ago`;
+    if (diff < 86400) return `${Math.round(diff/3600)}h ago`;
+    return d.toLocaleDateString();
+  }
+
+  // Start loading
+  if (!authToken) {
+    // Dev/preview mode: show a placeholder
+    state = {
+      workspaceId: 'preview-workspace', userId: 'preview-user',
+      googleConnected: false, syncedEntries: 0,
+      config: { daysBack: 30, daysForward: 0, enabled: 1 }
+    };
+    render();
+  } else {
+    loadStatus();
+  }
+</script>
+
+</body>
+</html>
