@@ -21,9 +21,11 @@ const storage = require('../storage');
  * }
  */
 router.post('/installed', (req, res) => {
-  const { workspaceId, userId, clockifyToken } = req.body;
+  console.log('[lifecycle] installed payload:', JSON.stringify(req.body));
 
-  if (!workspaceId || !userId || !clockifyToken) {
+  const { workspaceId, asUser, authToken } = req.body;
+
+  if (!workspaceId || !asUser || !authToken) {
     console.error('[lifecycle] installed: missing fields', req.body);
     return res.status(400).json({ error: 'Missing required fields' });
   }
@@ -31,10 +33,10 @@ router.post('/installed', (req, res) => {
   try {
     storage.upsertWorkspace({
       workspaceId,
-      userId,
-      addonToken: clockifyToken,
+      userId: asUser,
+      addonToken: authToken,
     });
-    console.log(`[lifecycle] Installed for workspace ${workspaceId} by user ${userId}`);
+    console.log(`[lifecycle] Installed for workspace ${workspaceId}`);
     res.status(200).json({ message: 'ok' });
   } catch (err) {
     console.error('[lifecycle] installed error:', err);
@@ -49,6 +51,7 @@ router.post('/installed', (req, res) => {
  * We remove all stored data for this workspace (cascade deletes sync_map too).
  */
 router.post('/uninstalled', (req, res) => {
+  console.log('[lifecycle] uninstalled payload:', JSON.stringify(req.body));
   const { workspaceId } = req.body;
 
   if (!workspaceId) {
