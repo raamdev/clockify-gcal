@@ -36,7 +36,7 @@ app.get('/manifest', (req, res) => {
     description: 'Automatically syncs Clockify time entries to Google Calendar every 15 minutes.',
     version: '1.0.0',
     baseUrl: BASE_URL,
-    plan: 'FREE',
+    minimalSubscriptionPlan:"FREE",
 
     scopes: ['TIME_ENTRY_READ', 'PROJECT_READ', 'USER_READ'],
 
@@ -47,7 +47,7 @@ app.get('/manifest', (req, res) => {
 
     components: [
       {
-        type: 'SIDEBAR',
+        type: 'sidebar',
         label: 'GCal Sync',
         accessLevel: 'ADMINS',
         path: '/settings',
