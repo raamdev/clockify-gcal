@@ -102,6 +102,7 @@ router.get('/api/calendars', async (req, res) => {
     const calendars = await gcal.listCalendars(authClient);
     res.json(calendars.map(c => ({ id: c.id, name: c.summary, primary: c.primary })));
   } catch (err) {
+    console.error('[settings] calendars error:', err);
     res.status(500).json({ error: err.message });
   }
 });
