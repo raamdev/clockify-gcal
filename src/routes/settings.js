@@ -3,7 +3,7 @@
  * Serves the settings UI iframe and API endpoints used by the settings page.
  *
  * The settings iframe URL (from the manifest) will be called with:
- *   ?token=<JWT>   — short-lived addon JWT issued by Clockify
+ *   ?auth_token=<JWT>   — short-lived addon JWT issued by Clockify
  *
  * We parse workspaceId from the JWT without full verification (Clockify
  * already validates it on their end). The JWT payload is base64-encoded.
@@ -35,7 +35,7 @@ function parseJwtPayload(token) {
 /**
  * GET /settings
  * Render the settings HTML page. Clockify loads this in an iframe and
- * appends ?token=JWT to the URL.
+ * appends ?auth_token=JWT to the URL.
  */
 router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public/settings.html'));
@@ -47,7 +47,7 @@ router.get('/', (req, res) => {
  * Called by the settings page's JavaScript after extracting token from URL.
  */
 router.get('/api/status', (req, res) => {
-  const { token } = req.query;
+  const token = req.query.auth_token || req.query.token;
   if (!token) return res.status(400).json({ error: 'Missing token' });
 
   const payload = parseJwtPayload(token);
@@ -84,7 +84,7 @@ router.get('/api/status', (req, res) => {
  * Returns the user's Google Calendars so they can pick which one to sync into.
  */
 router.get('/api/calendars', async (req, res) => {
-  const { token } = req.query;
+  const token = req.query.auth_token || req.query.token;
   if (!token) return res.status(400).json({ error: 'Missing token' });
 
   const payload = parseJwtPayload(token);

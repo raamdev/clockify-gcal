@@ -33,6 +33,7 @@ app.get('/manifest', (req, res) => {
     schemaVersion: '1.3',
     key: 'clockify-gcal-sync',
     name: 'Clockify-Gcal',
+    settings: '/settings',
     description: 'Automatically syncs Clockify time entries to Google Calendar every 15 minutes.',
     baseUrl: BASE_URL,
     minimalSubscriptionPlan:"FREE",

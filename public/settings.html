@@ -334,7 +334,7 @@
 
     // Extract the addon JWT from the URL ?token= parameter
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token') || '';
+    const token = urlParams.get('auth_token') || urlParams.get('token') || '';
 
     // Parse workspaceId from JWT payload (no signature check needed here)
     function parseJwt(t) {
