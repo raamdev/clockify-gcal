@@ -59,9 +59,9 @@ async function syncWorkspace(workspace) {
     storage.saveGoogleTokens(workspaceId, newTokens, null);
   });
 
-  // Time window: last 7 days → now (UTC ISO)
+   // Time window: last 365 days → now (UTC ISO)
   const now   = new Date();
-  const start = new Date(now - 7 * 24 * 60 * 60 * 1000);
+  const start = new Date(now - 365 * 24 * 60 * 60 * 1000);
   const startISO = start.toISOString();
   const endISO   = now.toISOString();
 
