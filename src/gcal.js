@@ -6,29 +6,6 @@
 
 const { google } = require('googleapis');
 
-// Google Calendar event color IDs (1–11).
-// We map Clockify project colors to the closest GCal color.
-const PROJECT_COLOR_MAP = {
-  '#F44336': '11', // Tomato
-  '#E91E63': '4',  // Flamingo
-  '#9C27B0': '3',  // Grape
-  '#673AB7': '1',  // Lavender (closest to deep purple)
-  '#3F51B5': '1',  // Lavender
-  '#2196F3': '7',  // Peacock
-  '#03A9F4': '7',  // Peacock
-  '#00BCD4': '7',  // Peacock
-  '#009688': '10', // Sage
-  '#4CAF50': '2',  // Sage / Basil
-  '#8BC34A': '2',
-  '#CDDC39': '5',  // Banana
-  '#FFEB3B': '5',  // Banana
-  '#FFC107': '6',  // Tangerine
-  '#FF9800': '6',
-  '#FF5722': '11', // Tomato
-  '#795548': '8',  // Graphite
-  '#607D8B': '8',  // Graphite
-};
-
 function getOAuthClient() {
   return new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
@@ -122,7 +99,6 @@ async function listSyncedEvents(authClient, calendarId, startISO, endISO) {
 function buildEventResource(entry, projectCache) {
   const project = entry.project || projectCache?.get(entry.projectId);
   const projectName = project?.name || null;
-  const projectColor = project?.color || null;
 
   // Build a meaningful title
   let summary = '';
@@ -137,11 +113,7 @@ function buildEventResource(entry, projectCache) {
   lines.push(`Synced from Clockify`);
   const description = lines.join('\n');
 
-  // Map project color to GCal color ID
-  const colorId = projectColor
-    ? (PROJECT_COLOR_MAP[projectColor.toUpperCase()] || undefined)
-    : undefined;
-
+  // No colorId is set, so events inherit the calendar's color.
   const resource = {
     summary,
     description,
@@ -155,8 +127,6 @@ function buildEventResource(entry, projectCache) {
       },
     },
   };
-
-  if (colorId) resource.colorId = colorId;
 
   return resource;
 }
