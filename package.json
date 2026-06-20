@@ -1,6 +1,6 @@
 {
   "name": "clockify-gcal-addon",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Cake.com add-on that syncs Clockify time entries to Google Calendar",
   "main": "src/index.js",
   "scripts": {
